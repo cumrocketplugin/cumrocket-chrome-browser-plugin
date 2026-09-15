@@ -24,8 +24,8 @@ export function navigationService(api = chrome, store = createTabStore()) {
       if (!status?.supported) throw Error('Auto Scroll is unavailable on this page. Reload an HTTP/HTTPS page.');
       action = { type: 'set', enabled: message.enabled, paused: message.paused, speed: message.speed, pauseAfterPositive: message.pauseAfterPositive, slowOnPositive: message.slowOnPositive };
     } else if (content && message.type === 'scroll.hello') {
-      action = { type: 'hello', documentId: sender.documentId, url: sender.url, kind: message.kind };
-    } else if (content && ['scroll.next', 'scroll.progress', 'scroll.pause'].includes(message.type)) {
+      action = { type: 'hello', documentId: sender.documentId, url: sender.url, kind: message.kind, ageConfirmation: message.ageConfirmation === true };
+    } else if (content && ['scroll.next', 'scroll.progress', 'scroll.pause', 'scroll.confirmAge'].includes(message.type)) {
       action = { type: message.type.slice(7), documentId: sender.documentId, revision: message.revision, target: message.target, signature: message.signature, url: sender.url, reason: message.reason };
     } else throw Error('Invalid scrolling action.');
     const state = await store.update(id, async old => {

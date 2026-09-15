@@ -1,3 +1,4 @@
+import { checkAgeConfirmation } from './age-confirmation.mjs';
 import { checkCaptions } from './captions.mjs';
 import { checkEntertainers } from './entertainers.mjs';
 import { checkAdSkip, checkOverlayAdSkip } from './ad-skip.mjs';
@@ -672,6 +673,7 @@ try {
   await checkNewProfileKeywords(criteriaPanel, id, keywordWorker);
   await checkWordTabs(criteriaPanel, id);
   await checkPopupLayout(criteriaPanel, id);
+  await checkAgeConfirmation(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   await checkAutoScroll(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   await checkPositivePause(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   await checkScout(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);

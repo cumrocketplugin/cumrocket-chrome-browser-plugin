@@ -2,10 +2,12 @@ import { locationAllowsPost } from './location-check.js';
 import { eyeballLevel, autoPauseColors } from './preferences.js';
 import { PositivePause, positiveAtEyeball } from './positive-pause.js';
 import { running } from './state.js';
+import { ageConfirmation } from './age-confirmation.js';
 import { nextPage } from './pagination.js';
 // All movement uses current scrollY; nothing restores or continually enforces a saved position.
 export class AutoNavigator {
   constructor(win, send, findNext = nextPage, positiveRanges = () => []) {
+    this.ageClicks = new WeakSet();
     this.locationHandles = new Set();
     this.eyeballLevel = 50; this.autoPauseColors = autoPauseColors();
     this.positiveRanges = positiveRanges; this.positivePause = new PositivePause();
@@ -48,7 +50,7 @@ export class AutoNavigator {
   async hello(kind) {
     const epoch = this.hold();
     try {
-      const state = await this.send('scroll.hello', { kind, instance: this.instance });
+      const state = await this.send('scroll.hello', { kind, instance: this.instance, ageConfirmation: !!ageConfirmation(this.doc) });
       if (epoch === this.syncEpoch) this.url = this.doc.location.href;
       this.release(state, epoch);
     } catch { if (epoch === this.syncEpoch) this.stop(); }
@@ -97,6 +99,11 @@ export class AutoNavigator {
     if (!running(this.state) || this.disposed) return;
     const root = this.doc.scrollingElement;
     if (!root) { this.pause('No scrollable content'); return; }
+    if (time - (this.lastAgeCheck ?? -500) >= 500 && !this.busy) {
+      this.lastAgeCheck = time;
+      const confirmation = ageConfirmation(this.doc);
+      if (confirmation && !this.ageClicks.has(confirmation)) this.confirmAge(confirmation);
+    }
     if (!this.state.pending && !this.busy) {
       const ranges = this.state.slowOnPositive ? this.positiveRanges() : this.state.pauseAfterPositive ? this.positiveRanges(this.autoPauseColors) : [];
       const slow = this.state.slowOnPositive && positiveAtEyeball(this.win, ranges, this.eyeballLevel);
@@ -146,6 +153,21 @@ export class AutoNavigator {
     }
     if (running(this.state) && !this.frame) this.frame = this.win.requestAnimationFrame(t => this.tick(t));
   }
+  async confirmAge(node) {
+    this.busy = true; const epoch = this.epoch;
+    try {
+      const revision = this.state.revision;
+      const state = await this.send('scroll.confirmAge', { revision });
+      if (epoch !== this.epoch || this.disposed) return;
+      this.apply(state);
+      if (!running(this.state) || !this.state.pending || state.revision !== revision + 1) return;
+      if (ageConfirmation(this.doc) !== node) { await this.pause('Age confirmation changed'); return; }
+      this.ageClicks.add(node);
+      this.pendingSignature = this.signature(); this.pendingHeight = this.doc.scrollingElement.scrollHeight;
+      node.click();
+    } catch { await this.pause('Age confirmation unavailable'); }
+    finally { if (epoch === this.epoch) this.busy = false; }
+  }
   async advance(next) {
     if (this.busy || this.state.pending || !running(this.state)) return;
     this.busy = true; const epoch = this.epoch;
@@ -165,12 +187,13 @@ export class AutoNavigator {
   async progress() {
     this.busy = true; const epoch = this.epoch;
     try {
+      const ageConfirmation = this.state.pending?.ageConfirmation;
       const state = await this.send('scroll.progress', { revision: this.state.revision });
       if (epoch !== this.epoch || this.disposed) return;
       this.apply(state);
       if (!running(this.state) || this.state.pending) return;
       // A replaced AJAX page starts at the top; appended infinite content keeps position.
-      if (this.doc.scrollingElement.scrollHeight <= this.pendingHeight) this.win.scrollTo({ top: 0, behavior: 'instant' });
+      if (!ageConfirmation && this.doc.scrollingElement.scrollHeight <= this.pendingHeight) this.win.scrollTo({ top: 0, behavior: 'instant' });
       this.positivePause.reset();
       this.pendingSignature = null; this.url = this.doc.location.href;
       this.bottomSince = null; this.stableSince = this.win.performance.now();

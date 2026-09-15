@@ -89,7 +89,7 @@ test('active-tab UI drops delayed replies and displays independent running/pause
 });
 function fixture() {
   let time = 0, id = 0; const frames = new Map(), listeners = new Map(); const observers = [];
-  const doc = { location: { href: 'https://site.test/list' }, scrollingElement: { scrollHeight: 2000 }, body: { textContent: 'first page' }, querySelector: () => null,
+  const doc = { location: { href: 'https://site.test/list' }, scrollingElement: { scrollHeight: 2000 }, body: { textContent: 'first page' }, querySelectorAll: () => [], querySelector: () => null,
     addEventListener: (type, fn) => listeners.set(type, fn), removeEventListener: type => listeners.delete(type) };
   const win = { crypto: globalThis.crypto, document: doc, scrollY: 0, innerHeight: 500, performance: { now: () => time, getEntriesByType: () => [] },
     addEventListener: (type, fn) => listeners.set(type, fn), removeEventListener: type => listeners.delete(type),
@@ -366,4 +366,23 @@ test('location check refresh rejects stale authors and permits newly eligible po
   await f.step(100);
   assert.equal(f.controller.state.paused, true);
   assert.match(f.controller.state.reason, /location verified: United States/);
+});
+
+test('age gate redirects continue only a running, unexpired same-site automatic traversal', () => {
+  const active = command(hello(defaults()), 'set', { enabled: true });
+  const pending = command(active, 'next', { target: 'https://site.test/page2' });
+  const gate = (s, fields = {}) => transition(s, { type: 'hello', documentId: 'gate', url: 'https://site.test/age', kind: 'navigate', ageConfirmation: true, ...fields });
+  assert.equal(gate(pending).paused, false);
+  assert.equal(gate(active).paused, true);
+  assert.equal(gate(pending, { url: 'https://other.test/age' }).paused, true);
+  assert.equal(gate(pending, { kind: 'reload' }).paused, true);
+  assert.equal(gate(command(pending, 'set', { paused: true })).paused, true);
+  assert.equal(gate({ ...pending, pending: { ...pending.pending, expires: 0 } }).paused, true);
+  const confirmed = command(gate(pending), 'confirmAge');
+  assert.equal(hello(confirmed, 'page2', 'https://site.test/page2').paused, false);
+  assert.equal(hello(confirmed, 'reload', 'https://site.test/age', 'reload').paused, false);
+  assert.equal(hello(confirmed, 'history', 'https://site.test/age', 'history').paused, true);
+  assert.equal(command({ ...active, ageConfirmations: 20 }, 'confirmAge').paused, true);
+  const paused = command(active, 'set', { paused: true });
+  assert.equal(command(paused, 'confirmAge'), paused);
 });

@@ -6,7 +6,7 @@ export function transition(previous, action, now = Date.now()) {
   if (action.type === 'set') {
     if (action.enabled !== undefined) {
       if (typeof action.enabled !== 'boolean') throw Error('Invalid Auto Scroll toggle.');
-      s.enabled = action.enabled; s.paused = false; s.pending = null; s.visited = []; s.reason = '';
+      s.enabled = action.enabled; s.paused = false; s.pending = null; s.visited = []; s.ageConfirmations = 0; s.reason = '';
     }
     if (action.paused !== undefined) {
       if (typeof action.paused !== 'boolean' || !s.enabled) throw Error('Enable Auto Scroll first.');
@@ -25,13 +25,20 @@ export function transition(previous, action, now = Date.now()) {
       s.speed = action.speed;
     }
   } else if (action.type === 'hello') {
-    const automatic = running(s) && s.pending && s.pending.expires > now && (s.pending.target === action.url || (!s.pending.target && new URL(s.url).origin === new URL(action.url).origin)) && !['history', 'reload'].includes(action.kind);
+    const automatic = running(s) && s.pending && s.pending.expires > now && (s.pending.target === action.url || (action.ageConfirmation === true && new URL(s.url).origin === new URL(action.url).origin) || (!s.pending.target && new URL(s.url).origin === new URL(action.url).origin)) && action.kind !== 'history' && (action.kind !== 'reload' || s.pending.ageConfirmation === true);
     if (action.kind === 'history' || (s.documentId && (s.documentId !== action.documentId || s.url !== action.url) && !automatic)) pause('Navigation paused');
     if (automatic) s.pending = null;
     s.documentId = action.documentId; s.url = action.url;
   } else {
     if (action.documentId !== s.documentId || (action.type !== 'pause' && action.revision !== s.revision)) return previous;
-    if (action.type === 'next') {
+    if (action.type === 'confirmAge') {
+      if (!running(s)) return previous;
+      if ((s.ageConfirmations ?? 0) >= 20) pause('Age confirmation limit reached');
+      else {
+        s.ageConfirmations = (s.ageConfirmations ?? 0) + 1;
+        s.pending = { target: null, expires: now + 15000, ageConfirmation: true };
+      }
+    } else if (action.type === 'next') {
       if (!running(s) || s.pending) return previous;
       if (action.target !== null && (typeof action.target !== 'string' || action.target.length > 8192)) throw Error('Invalid next page.');
       const visit = action.target ? s.url : `content:${s.url}:${action.signature}`;
