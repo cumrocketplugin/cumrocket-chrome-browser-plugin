@@ -1,3 +1,4 @@
+import { checkCaptions } from './captions.mjs';
 import { checkEntertainers } from './entertainers.mjs';
 import { checkAdSkip, checkOverlayAdSkip } from './ad-skip.mjs';
 import { checkScout } from './scout.mjs';
@@ -677,6 +678,7 @@ try {
   await checkAdSkip(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   await checkOverlayAdSkip(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   await checkKeywordColors(context, criteriaPanel, id, `http://127.0.0.1:${server.address().port}`);
+  await checkCaptions(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   const visitedURL = await checkVisits(context, criteriaPanel, id, `http://127.0.0.1:${server.address().port}`);
   await checkPopups(context, criteriaPanel, `http://127.0.0.1:${server.address().port}`);
   // A genuinely fresh browser context must not restore transient scrolling sessions.

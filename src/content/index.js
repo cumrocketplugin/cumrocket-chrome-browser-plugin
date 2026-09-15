@@ -1,3 +1,4 @@
+import { CaptionCollector } from '../captions/collector.js';
 import { AdSkipper } from '../ads/skip.js';
 import { wirePopups } from './popups.js';
 import { AutoNavigator } from '../navigation/controller.js';
@@ -8,6 +9,7 @@ const key = '__cumrocketContent';
 globalThis[key]?.dispose();
 const popups = wirePopups();
 const adSkipper = new AdSkipper(document, globalThis.__cumrocketSkippedAds ??= new Set());
+const captions = new CaptionCollector(document);
 const scanner = new Scanner(document, persistCountHistory);
 const navigator = new AutoNavigator(window, async (type, payload) => {
   const response = await chrome.runtime.sendMessage({ type, ...payload });
@@ -16,11 +18,13 @@ const navigator = new AutoNavigator(window, async (type, payload) => {
 }, undefined, (colors) => colors === undefined ? scanner.highlighter.positiveRanges : scanner.highlighter.positiveRangesForColors(colors));
 let receivedUpdate = false, disposed = false;
 function update(state) {
-  try { adSkipper.configure(state.autoSkipAds); navigator.configure(state); scanner.update(state); return { ok: true }; }
+  try { captions.configure(state); adSkipper.configure(state.autoSkipAds); navigator.configure(state); scanner.update(state); return { ok: true }; }
   catch { scanner.stop(); return { ok: false }; }
 }
 const listener = (message, sender, respond) => {
   if (message?.type === 'scroll.changed') { navigator.apply(message.state); respond({ ok: true }); return; }
+  if (message?.type === 'captions.snapshot') { respond(captions.snapshot()); return; }
+  if (message?.type === 'captions.clear') { respond(captions.clear()); return; }
   if (message?.type === 'counts.get') { respond({ counts: scanner.snapshot() }); return; }
   if (message?.type === 'page.status') { respond({ supported: true, scrollInstance: navigator.instance }); return; }
   if (message?.type === 'state.changed') { receivedUpdate = true; respond(update(message.state)); }
@@ -28,6 +32,7 @@ const listener = (message, sender, respond) => {
 chrome.runtime.onMessage.addListener(listener);
 globalThis[key] = { dispose() {
   disposed = true;
+  captions.dispose();
   navigator.dispose();
   adSkipper.dispose();
   popups.dispose();

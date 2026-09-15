@@ -98,7 +98,7 @@ export function createStore(area = chrome.storage.local) {
   };
 }
 export function scanningState(state) {
-  return { entertainers: entertainerPreferences(state.entertainers), autoSkipAds: state.preferences?.autoSkipAds === true, locationCheck: scoutProjection(state), enabled: state.enabled, eyeballLevel: eyeballLevel(state.preferences?.eyeballLevel), autoPauseColors: autoPauseColors(state.preferences?.autoPauseColors), tracking: state.preferences?.tracking === true, profiles: state.profiles.map(({ id, enabled, positiveKeywords, negativeKeywords, rules }) => ({ id, enabled, positiveKeywords, negativeKeywords, rules })) };
+  return { captionSites: state.captionSites ?? [], entertainers: entertainerPreferences(state.entertainers), autoSkipAds: state.preferences?.autoSkipAds === true, locationCheck: scoutProjection(state), enabled: state.enabled, eyeballLevel: eyeballLevel(state.preferences?.eyeballLevel), autoPauseColors: autoPauseColors(state.preferences?.autoPauseColors), tracking: state.preferences?.tracking === true, profiles: state.profiles.map(({ id, enabled, positiveKeywords, negativeKeywords, rules }) => ({ id, enabled, positiveKeywords, negativeKeywords, rules })) };
 }
 
 // Runtime records belong to a browser session, never storage.local or profile backups.

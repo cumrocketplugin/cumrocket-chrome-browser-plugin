@@ -1,3 +1,4 @@
+import { wireCaptions } from '../ui/captions.js';
 import { wireVisits } from '../ui/visits.js';
 import { wireAutoScroll } from '../ui/auto-scroll.js';
 import { providers } from '../services/models.js';
@@ -366,3 +367,5 @@ $('#import-file').addEventListener('change', async () => {
 wireAutoScroll();
 
 wireVisits();
+
+wireCaptions();

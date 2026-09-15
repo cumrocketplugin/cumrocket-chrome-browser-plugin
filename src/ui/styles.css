@@ -146,3 +146,6 @@ input[readonly] { background: #f8f4f8; }
 .workspace #profile-toggle-status { margin: 5px 0; }
 .workspace .word-tabs { margin-top: 12px; }
 @media (max-width: 350px) { .workspace main { padding: 8px; } .workspace .brand-header { padding: 14px 12px 12px; } .workspace .brand-header h1 { font-size: 21px; } }
+
+#captions-report p { overflow-wrap: anywhere; }
+.caption-ai-report { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }

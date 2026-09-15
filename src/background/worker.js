@@ -1,3 +1,4 @@
+import { analyzeCaptionThemes } from '../services/caption-analysis.js';
 import { visitService } from './visits.js';
 import { resumeCommand } from './commands.js';
 import { navigationService } from './navigation.js';
@@ -74,6 +75,22 @@ async function handle(message, sender) {
   const trusted = sender.id === chrome.runtime.id && sender.url?.startsWith(chrome.runtime.getURL(''));
   if (!trusted) throw new Error('This action is only available in CumRocket.');
   if (message.type.startsWith('visits.')) return visits(message);
+  if (message.type === 'captions.configure') {
+    const tab = await chrome.tabs.get(message.tabId);
+    const url = new URL(tab.url);
+    if (!['http:', 'https:'].includes(url.protocol) || typeof message.enabled !== 'boolean') throw new Error('Choose a supported website.');
+    await store.update(s => ({ ...s, captionSites: [...new Set([...(s.captionSites ?? []).filter(site => site !== url.hostname), ...(message.enabled ? [url.hostname] : [])])] }));
+    await broadcast();
+    return true;
+  }
+  if (message.type === 'captions.analyze') {
+    const snapshot = await chrome.tabs.sendMessage(message.tabId, { type: 'captions.snapshot' });
+    const state = await store.read();
+    if (!snapshot?.enabled || !state.captionSites?.includes(new URL(snapshot.url).hostname)) throw new Error('Enable caption analysis for this website first.');
+    const { provider, model } = state.preferences;
+    return { ...await analyzeCaptionThemes({ provider, model, apiKey: await store.getKey(provider), captions: snapshot.captions }), url: snapshot.url };
+  }
+
   if (message.type === 'profiles.export') return exportProfiles((await store.read()).profiles, message.scope, message.id);
   if (message.type === 'profiles.import') {
     const imported = parseImport(message.text, message.scope);

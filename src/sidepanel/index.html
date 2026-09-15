@@ -4,7 +4,7 @@
 <header class="brand-header"><div class="brand-row"><div><h1>CumRocket</h1><p class="subtitle">Find what pulls you in.</p></div><button id="settings" class="header-button">Settings</button></div>
 <div class="scan-strip"><label class="inline"><input type="checkbox" id="global-enabled"> Highlight pages</label><span class="local-note">LOCAL BY DEFAULT</span></div>
 <p id="global-note" class="hint"></p></header>
-<nav class="workspace-nav" aria-label="Workspace sections"><a href="#keyword-workspace">Keywords</a><a href="#browse-tools">Browse</a><a href="#discovery">Discover</a><a href="#url-visits">History</a></nav>
+<nav class="workspace-nav" aria-label="Workspace sections"><a href="#keyword-workspace">Keywords</a><a href="#browse-tools">Browse</a><a href="#caption-analysis">Captions</a><a href="#discovery">Discover</a><a href="#url-visits">History</a></nav>
 <p id="status" role="status" aria-live="polite"></p>
 <div id="keyword-workspace" class="feature-block" tabindex="-1"><div class="section-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h2>Keyword profiles</h2></div><button id="new-profile" class="primary">New profile</button></div>
 <label for="profile-select">Profile</label><select id="profile-select" disabled><option>Loading profiles…</option></select>
@@ -30,6 +30,16 @@
 <section><label class="inline"><input type="checkbox" id="tracking-enabled"> Track keyword occurrences</label><p class="hint">Live counts for saved keywords on the current page. Pauses with Highlight pages.</p></section>
 <section><label class="inline"><input type="checkbox" id="sidebar-mode"> Use sidebar</label><p class="hint">Keep this workspace beside the page you’re browsing.</p><button id="show-sidebar" hidden>Show sidebar</button></section>
 </div><p id="page-status" class="hint" role="status"></p></section>
+<section id="caption-analysis" class="feature-block" tabindex="-1"><h2>Caption report</h2>
+<p id="captions-site" class="hint">Loading website…</p>
+<label class="inline"><input id="captions-enabled" type="checkbox" disabled> Analyze captions on this website</label>
+<p class="hint">Collects page captions, video card titles, and available subtitle tracks as the page loads. Collection is local, independent of highlighting, and resets on navigation or reload. Does not read text inside images or inaccessible players. Turn off to discard collected captions.</p>
+<div class="actions"><button id="captions-refresh" disabled>Generate report</button><button id="captions-download" disabled>Download report</button><button id="captions-clear" disabled>Start over</button></div>
+<label class="inline"><input id="captions-advanced" type="checkbox" disabled> Advanced AI analysis</label>
+<p id="captions-ai-note" class="hint">Requires an API key for the selected provider in Settings.</p>
+<button id="captions-ai" hidden disabled>Send captions and analyze</button>
+<p id="captions-status" role="status"></p><div id="captions-report"></div><pre id="captions-ai-report" class="caption-ai-report"></pre>
+</section>
 <section id="discovery" class="feature-block" tabindex="-1"><p class="eyebrow">EXPAND YOUR SEARCH</p><h2>Discover related keywords</h2><p id="ai-model" class="hint"></p><p class="hint">Send seed keywords to your selected AI provider, review suggestions, then choose which to add. API usage may incur charges.</p>
 <label for="ai-profile">Add suggestions to</label><select id="ai-profile"></select>
 <label for="seeds">Seed keywords</label><textarea id="seeds" placeholder="artificial intelligence"></textarea>
