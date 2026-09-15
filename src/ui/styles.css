@@ -1,0 +1,92 @@
+:root { font-family: system-ui, -apple-system, sans-serif; color: #382130; background: #fff5fa; font-size: 14px; color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 280px; }
+/* Chrome sizes the popup from its document. Keep the body at its natural height
+   and fit the available width (excluding the root scrollbar), not 100vw.
+   Reserve the gutter so content changes cannot toggle the available width. */
+html:has(body.popup) { scrollbar-gutter: stable; }
+body.popup { width: 420px; max-width: 100%; }
+main { max-width: 680px; margin: auto; padding: 22px; }
+header { margin-bottom: 22px; }
+h1 { font-size: 24px; letter-spacing: -.8px; margin: 0 0 5px; }
+h2 { font-size: 17px; margin: 0 0 14px; }
+h3 { font-size: 15px; margin: 0; overflow-wrap: anywhere; }
+p { line-height: 1.5; }
+.subtitle, .hint, small { color: #78616f; line-height: 1.5; }
+.subtitle { margin: 0; }
+section, .card { background: white; padding: 18px; border: 1px solid #efd6e3; border-radius: 12px; margin-bottom: 16px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+label { display: block; font-weight: 600; margin: 14px 0 6px; }
+label.inline { display: flex; align-items: center; gap: 8px; margin: 0; }
+input:not([type=checkbox]), textarea, select { width: 100%; border: 1px solid #d7afc5; background: white; border-radius: 7px; padding: 10px; font: inherit; color: inherit; }
+textarea { resize: vertical; min-height: 90px; }
+input[type=checkbox] { accent-color: #b51e68; width: 18px; height: 18px; flex-shrink: 0; }
+button { cursor: pointer; border: 1px solid #e3bbcf; border-radius: 7px; padding: 9px 13px; background: white; color: #9f1959; font: inherit; font-weight: 600; }
+button.primary { background: #be185d; color: white; border-color: #be185d; }
+button.danger { color: #a12d35; }
+button:hover { filter: brightness(.95); }
+button:disabled { cursor: wait; opacity: .55; }
+:focus-visible { outline: 3px solid #ec4899; outline-offset: 3px; }
+#status { min-height: 22px; line-height: 1.5; overflow-wrap: anywhere; }
+#status.error { color: #a12d35; }
+.card { padding: 14px; }
+.card p { margin: 8px 0; }
+.empty { border: 1px dashed #e3bbcf; padding: 18px; border-radius: 8px; color: #78616f; }
+#suggestions label { font-weight: 400; padding: 6px 0; overflow-wrap: anywhere; }
+[hidden] { display: none !important; }
+.badge { font-size: 12px; color: #b51e68; background: #fce7f3; padding: 4px 8px; border-radius: 20px; white-space: nowrap; }
+
+.criterion { min-width: 0; margin: 12px 0; border: 1px solid #aab4c4; border-radius: 8px; padding: 12px; }
+.criterion legend { padding: 0 4px; font-weight: 600; }
+
+.keyword-list { min-width: 0; border: 0; padding: 0; margin: 18px 0; }
+.word-tabs { display: flex; gap: 8px; margin-top: 18px; }
+.word-tabs button { flex: 1; min-width: 0; }
+.word-tabs [aria-selected=true] { background: #be185d; color: white; border-color: #be185d; }
+.keyword-row { border: 1px solid #e3bbcf; border-radius: 8px; padding: 12px; margin: 10px 0; }
+.keyword-row input[type=checkbox]:disabled { cursor: default; opacity: 1; }
+.keyword-activity { margin-left: auto; font-weight: 400; }
+.keyword-row span { overflow-wrap: anywhere; min-width: 0; }
+.keyword-row input[type=text] { margin-top: 10px; }
+.keyword-error { color: #a12d35; margin: 6px 0; }
+.keyword-error:empty { display: none; }
+
+.keyword-rows { padding: 4px; }
+
+#profiles { margin-bottom: 14px; }
+#editor-title { overflow-wrap: anywhere; }
+input[readonly] { background: #fff5fa; }
+
+.keyword-count { display: block; margin-top: 6px; font-variant-numeric: tabular-nums; }
+
+.keyword-colors { min-width: 0; margin: 8px 0; padding: 8px; }
+.color-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.color-choices button { border-bottom-width: 6px; }
+.color-choices button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 1px; font-weight: bold; }
+.keyword-colors input[type="color"] { width: 48px; height: 36px; padding: 2px; }
+.keyword-colors small { display: block; }
+.keyword-color { border-left: 14px solid; padding-left: 5px; }
+
+.color-custom { display: flex; align-items: center; gap: 8px; }
+
+#visits-history, #popup-history { overflow-wrap: anywhere; }
+#visits-details { margin-bottom: 14px; }
+#visits-status { overflow-wrap: anywhere; }
+
+.visit-count { display: inline-block; font-variant-numeric: tabular-nums; transform-origin: center; }
+
+/* CumRocket brand: rose surfaces, pink controls and visible keyboard focus. */
+header { border-bottom: 2px solid #f9a8d4; padding-bottom: 18px; }
+header h1 { color: #be185d; display: flex; align-items: center; gap: 10px; }
+header h1::before { content: ""; width: 34px; height: 34px; flex: 0 0 34px; background: url('../icons/icon-48.png') center / contain no-repeat; }
+button { background: #fff5fa; border-radius: 9px; transition: background-color .15s, box-shadow .15s; }
+button:hover:not(:disabled) { background: #fce7f3; filter: none; }
+button.primary, .word-tabs [aria-selected=true] { background: #be185d; border-color: #be185d; box-shadow: 0 2px 5px #be185d20; }
+button.primary:hover:not(:disabled), .word-tabs [aria-selected=true]:hover { background: #9d174d; }
+input[type=range] { accent-color: #be185d; }
+a { color: #a81858; }
+@media (prefers-reduced-motion: reduce) { button { transition: none; } }
+input::file-selector-button { cursor: pointer; border: 1px solid #e3bbcf; border-radius: 7px; padding: 7px 10px; margin-right: 10px; background: #fff5fa; color: #9f1959; font: inherit; font-weight: 600; }
+input::file-selector-button:hover { background: #fce7f3; }
+#auto-pause-custom { display: block; width: 56px; height: 40px; padding: 3px; margin-bottom: 8px; }

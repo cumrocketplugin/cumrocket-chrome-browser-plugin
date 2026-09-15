@@ -1,0 +1,46 @@
+import { defaultColor, keywordColor, contrastColor } from './colors.js';
+export const HIGHLIGHT_NAME = 'cumrocket-matches';
+export const NEGATIVE_HIGHLIGHT_NAME = 'cumrocket-negative';
+const names = { positive: HIGHLIGHT_NAME, negative: NEGATIVE_HIGHLIGHT_NAME };
+export class Highlighter {
+  constructor(win = window) { this.win = win; this.customNames = new Set(); this.positiveRanges = []; this.positiveColors = new Map(); }
+  clearRanges() {
+    this.positiveRanges = []; this.positiveColors = new Map();
+    for (const name of [...Object.values(names), ...this.customNames]) this.win.CSS?.highlights?.delete(name);
+    this.customNames.clear();
+  }
+  positiveRangesForColors(colors) {
+    const allowed = new Set(colors);
+    return this.positiveRanges.filter(range => allowed.has(this.positiveColors.get(range)));
+  }
+  clear() { this.clearRanges(); this.style?.remove(); this.style = null; }
+  paint(ranges) {
+    this.clearRanges();
+    if (!this.win.CSS?.highlights || !this.win.Highlight) return;
+    const groups = new Map();
+    for (const item of ranges) {
+      if (!Object.hasOwn(names, item.kind)) continue;
+      const color = keywordColor(item, item.kind);
+      const name = color === defaultColor(item.kind) ? names[item.kind] : `cumrocket-${item.kind}-${color.slice(1)}`;
+      if (!groups.has(name)) groups.set(name, { color, highlight: new this.win.Highlight() });
+      groups.get(name).highlight.add(item.range);
+    }
+    const rules = [];
+    for (const [name, { color, highlight }] of groups) {
+      if (!Object.values(names).includes(name)) {
+        this.customNames.add(name);
+        rules.push(`::highlight(${name}) { background-color: ${color}; color: ${contrastColor(color)}; text-decoration: underline; }`);
+      }
+      this.win.CSS.highlights.set(name, highlight);
+    }
+    const positives = ranges.filter(item => item.kind === 'positive');
+    this.positiveRanges = positives.map(item => item.range);
+    this.positiveColors = new Map(positives.map(item => [item.range, keywordColor(item, 'positive')]));
+    // Reuse unchanged rules so our own stylesheet does not trigger endless rescans.
+    const css = rules.join('\n');
+    if (css) {
+      if (!this.style) { this.style = this.win.document.createElement('style'); this.win.document.documentElement.append(this.style); }
+      if (this.style.textContent !== css) this.style.textContent = css;
+    } else if (this.style) { this.style.remove(); this.style = null; }
+  }
+}

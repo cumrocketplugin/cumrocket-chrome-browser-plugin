@@ -1,0 +1,1 @@
+import '../sidepanel/index.js';

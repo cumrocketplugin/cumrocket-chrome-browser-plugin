@@ -1,74 +1,67 @@
 # CumRocket Chrome Extension
 
-Find relevant videos and the moments inside them faster with keyword search, regular expressions, and AI that understands similar meanings—even when someone uses different words.
+Find and highlight the words that matter as you browse, with keyword profiles, regular expressions, optional AI suggestions, automatic scrolling, and video ad skipping. CumRocket uses a pink interface and a rocket toolbar icon.
 
-## Project status
+## Install
 
-This project is in the planning stage. This README describes the intended experience; the extension is not implemented or available to install yet.
+Requires Node.js 20+ and Chrome 120+.
 
-## What it will do
+```sh
+npm ci
+npm run build
+```
 
-- **Search by keyword or phrase:** Find exact matches in available video titles, descriptions, captions, and transcripts.
-- **Highlight matches:** Make matching words and phrases easy to spot in search results and transcript excerpts.
-- **Support regular expressions:** Use regex patterns to search for spelling variations, word combinations, and other custom text patterns.
-- **Suggest related searches:** Generate synonyms, related terms, and alternative phrases that users can review and search with.
-- **Find similar meanings:** Identify relevant passages even when the speaker expresses an idea differently from the search query.
-- **Search with an AI agent when needed:** Offer an optional mode that tries related queries, examines results, and refines the search within user-defined limits.
-- **Jump to relevant moments:** Link matches to video timestamps when timestamped captions or transcripts are available.
-- **Navigate automatically:** Move from page to page on supported video sites, following search result pages and opening relevant videos to continue the search.
-- **Pause as needed:** Pause and resume automatic navigation and agent-assisted search to inspect results, and pause video playback when needed.
-- **Automatically skip ads:** Provide an **Auto-click “Skip ad”** switch that clicks the site's skip button when it becomes available.
+1. Open `chrome://extensions` and enable **Developer mode**.
+2. Choose **Load unpacked** and select this repository’s `dist/` directory.
+3. Pin **CumRocket**, then click its icon to open the editor.
+4. Create a profile, add positive or negative keywords, save it, and visit a webpage.
+5. Open **Settings** to configure ad skipping, scrolling, location checks, or optional AI credentials.
 
-## Example
+After rebuilding, reload the extension in Chrome. Keep using the same `dist/` directory to retain its identity and saved data. **Use sidebar** switches between the full popup editor and Chrome’s side panel.
 
-Suppose you are looking for a video explaining **“how to fix a slow computer.”**
+## Implemented features
 
-An exact search could find that phrase. Related searches could also look for:
+The working extension is adapted from the local Spotadog `spot` plugin, including its complete extension source and regression suite. The separate website and X Profile Scout application are not bundled; their exported scout data can be imported.
 
-- “speed up your PC”
-- “improve laptop performance”
-- “why your computer is sluggish”
+- **Profiles:** Create, edit, delete, enable, select and search named profiles. Save individual keywords independently; maintain separate positive and negative lists.
+- **Matching:** 17 keyword criteria, including literal words/phrases, text operations, lengths, numbers, URLs, emails, hashtags, mentions and validated advanced regex. See [match criteria](docs/keyword-match-criteria.md).
+- **Highlights:** Per-keyword preset/custom colors, independent positive/negative matches, dynamic page rescanning, and a global pause. Highlight colors retain their meaning; the app’s controls use pink.
+- **AI suggestions:** Optional OpenAI and Anthropic provider configuration, model selection, reviewed seed-based suggestions, dismissal and explicit approval into either list. Manual matching needs no API key.
+- **Automatic navigation:** Per-tab Auto Scroll, adjustable speed, pause/resume, supported next-page navigation, and an Alt+Shift+R resume shortcut (Option+Shift+R on Mac). Disable Auto Scroll to stop.
+- **Matching post controls:** Pause or slow down at a configurable viewport level, with selectable auto-pause highlight colors.
+- **Location checks:** Import X Profile Scout JSON and restrict keyword-triggered pauses to authors whose uploaded account location matches the configured location.
+- **Counts:** Optional cumulative per-URL keyword occurrence counts, including repeated and unique text contexts.
+- **History:** Optional session/all-time URL visit and popup/overlay histories, search, pagination and clearing.
+- **Backups:** Validated single-profile and full-collection JSON imports/exports. CumRocket uses its own `cumrocket.profiles` format and storage namespace.
+- **Ad skipping:** Off by default. Enable **Settings → Automatic ad skipping** to activate eligible, visible skip-ad controls beside a prominent playing video, including supported MGP and overlay players. Countdown controls are not bypassed.
 
-Semantic search could surface a passage such as **“These steps will make your machine run faster,”** even though it does not contain the original keywords.
+See [detailed features](docs/features.md), [requirements](docs/requirements.md), and [privacy architecture](docs/privacy-architecture.md).
 
-For a more precise text search, a regex such as `\b(slow|sluggish)\s+(computer|PC|laptop)\b` could match several specific word combinations. Case sensitivity should be configurable.
+## Video-search roadmap and limits
 
-## Intended workflow
+The [original video-search plan](docs/video-search-roadmap.md) is preserved. This implementation brings over the features already present in Spotadog. Dedicated transcript/caption extraction, timestamped video results, semantic passage ranking, agent-assisted query refinement with usage limits, video playback pause controls, and user-configurable navigation page limits **are not implemented**.
 
-1. Open the extension on a supported video page or search results page.
-2. Enter a keyword, phrase, regex pattern, or description of what you want to find.
-3. Choose exact, regex, or semantic search.
-4. Optionally review suggested phrases or enable agent-assisted query refinement.
-5. Review results with highlighted excerpts, the match type, and an explanation of why each result is relevant.
-6. Open a video or jump to a matching timestamp where available.
-7. Optionally enable automatic navigation to continue across pages; pause or resume the search and video playback as needed.
-8. Turn **Auto-click “Skip ad”** on or off to control automatic clicks on available ad-skip buttons.
+Matching operates on available rendered webpage text, including visible titles, descriptions or transcript text when a site renders them. Phrases do not span separate text nodes. Iframes, shadow roots, canvas text, PDFs and browser-restricted pages are not scanned. Automatic pagination and ad skipping depend on recognizable page/player markup. Live website compatibility is not guaranteed by fixture tests.
 
-## Navigation and playback controls
+## Privacy
 
-- **Automatic navigation:** An optional mode that continues through search result pages and relevant video pages within a user-set page limit. Show the current page and search progress.
-- **Pause, resume, and stop:** Keep these controls accessible during automated browsing. Pausing should prevent further navigation and search actions until resumed; stopping should end the current automated search.
-- **Video pause:** Allow playback to pause while the user reviews a matching passage or changes search settings.
-- **Auto-click “Skip ad”:** A separate switch, off by default, that automatically clicks a visible, enabled “Skip ad” or “Skip ads” button on supported sites. It waits for the site's skip option to become available. Turning the switch off stops automatic ad-skip clicks.
+Scanning, matching, counts, URL history, popup history and uploaded location records stay in this browser. There is no analytics service or developer backend. HTTP/HTTPS access allows automatic scanning; storage, scripting, sidePanel and webNavigation support persistence, scanner reloads, sidebar display and optional visit tracking.
 
-Automatic navigation and ad skipping depend on support for each site's page structure and playback controls.
+Choosing **Get suggestions** sends only the seed text you explicitly enter to the configured AI provider. It does not attach page contents or browsing history. Provider usage may incur charges. API keys are stored locally, unencrypted, and restricted to trusted extension contexts; keys are not included in profile exports. Uninstalling removes the extension’s local data.
 
-## Search principles
+## Development and verification
 
-- **Keep direct search fast:** Exact and regex searches should work independently of AI features.
-- **Show the evidence:** Ground results in available source text and distinguish exact matches from AI-estimated relevance.
-- **Keep users in control:** Make agent-assisted search optional, show the queries it tries, and allow users to stop it.
-- **Make limits clear:** Missing captions, transcripts, or timestamps may reduce search coverage. AI matches may be imperfect.
-- **Handle data deliberately:** Explain what content AI features send to an external service before enabling those features, and request only the browser permissions needed.
+```sh
+npx playwright install chromium
+npm run check
+```
 
-## Initial implementation scope
+`check` runs unit tests, builds the extension, and loads the real extension in isolated Chromium for browser regression tests. Provider responses are mocked; live API calls, native toolbar/sidebar gestures and live served advertisements require manual verification. Browser screenshots are written to ignored `test-results/`.
 
-1. Extension interface and support for an initial video platform.
-2. Available text extraction, keyword search, and match highlighting.
-3. Regex search with validation and safeguards for expensive patterns.
-4. AI-generated phrase suggestions and semantic matching.
-5. Optional agent-assisted search with limits on queries, runtime, and AI usage.
-6. Automatic page navigation with page limits and pause, resume, and stop controls.
-7. Video pause controls and an optional automatic “Skip ad” button clicker.
+Edit `src/icons/icon.svg` and run `npm run icons` to regenerate the packaged PNG icons. `npm run build` bundles local source only; there are no remote runtime scripts.
 
-Supported platforms, AI providers, transcript sources, and the technical architecture are still to be decided. Installation and development instructions will be added when a working implementation exists.
+- `src/`: extension UI, background worker, content scanner, matching, storage, navigation, ad skipping and AI adapters.
+- `tests/`: unit and browser regression coverage.
+- `scripts/`: build and icon generation.
+- `docs/port-notes.md`: port scope and verification record.
+- [GITHUB_FLOW.md](GITHUB_FLOW.md): repository Git workflow.
