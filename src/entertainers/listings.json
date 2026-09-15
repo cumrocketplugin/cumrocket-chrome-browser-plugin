@@ -41,5 +41,189 @@
     "monthlyFee": null,
     "feeAsset": null
   },
-  "listings": []
+  "listings": [
+    {
+      "id": "mia-malkova",
+      "name": "Mia Malkova",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Linktree",
+          "url": "https://linktr.ee/miamalkova"
+        }
+      ],
+      "categories": [
+        "performers",
+        "creators"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "riley-reid",
+      "name": "Riley Reid",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "IMDb public profile",
+          "url": "https://www.imdb.com/name/nm4764491/"
+        }
+      ],
+      "categories": [
+        "performers",
+        "creators"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "littleredbunny",
+      "name": "LittleRedBunny",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Linktree",
+          "url": "https://linktr.ee/LittleRedBunny"
+        }
+      ],
+      "categories": [
+        "cam-models"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "purple-bitch",
+      "name": "Purple Bitch",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "X public profile",
+          "url": "https://x.com/impurplebitch"
+        }
+      ],
+      "categories": [
+        "cam-models",
+        "cosplay"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "sweetie-fox",
+      "name": "Sweetie Fox",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Personal website",
+          "url": "https://sweetiefox.com/"
+        }
+      ],
+      "categories": [
+        "cosplay"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "leolulu",
+      "name": "LeoLulu",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Personal website",
+          "url": "https://www.leolulu.fr/"
+        }
+      ],
+      "categories": [
+        "couples"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "danika-mori",
+      "name": "Danika Mori",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Public creator profile",
+          "url": "https://www.popstarlabs.com/blogs/adult-star-index/danika-mori"
+        }
+      ],
+      "categories": [
+        "couples"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "brazzers",
+      "name": "Brazzers",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Aylo brand directory",
+          "url": "https://www.aylo.com/brands/"
+        }
+      ],
+      "categories": [
+        "studios"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    },
+    {
+      "id": "digital-playground",
+      "name": "Digital Playground",
+      "aliases": [],
+      "profiles": [
+        {
+          "site": "Aylo brand directory",
+          "url": "https://www.aylo.com/brands/"
+        }
+      ],
+      "categories": [
+        "studios"
+      ],
+      "payment": {
+        "transactionHash": "",
+        "holdingWallet": ""
+      },
+      "status": "pending",
+      "activeUntil": null
+    }
+  ]
 }
