@@ -21,6 +21,12 @@ npm run build
 
 After rebuilding, reload the extension in Chrome. Keep using the same `dist/` directory to retain its identity and saved data. **Use sidebar** switches between the full popup editor and Chrome’s side panel.
 
+## Workspace
+
+The popup and sidebar open on your keyword profiles. Use the **Keywords**, **Browse**, **Discover**, and **History** section links to jump between tools. Profile settings come first; browsing preferences, AI discovery and history follow below. Settings use two columns on wider screens and one column on narrow screens.
+
+Use the **Profile enabled** switch beside the selected profile to enable or disable it immediately—no Edit or Save step. Keywords stay saved when the profile is disabled. The switch preserves unfinished keyword/name edits and restores its previous state if saving fails. **Edit** opens the profile name field. New profiles keep their enabled choice in the draft until **Save profile**.
+
 ## Implemented features
 
 The working extension is adapted from the local Spotadog `spot` plugin, including its complete extension source and regression suite. The separate website and X Profile Scout application are not bundled; their exported scout data can be imported.

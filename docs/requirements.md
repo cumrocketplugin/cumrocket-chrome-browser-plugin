@@ -225,3 +225,10 @@ Use rendered player class names, including the mgp_ prefix applied to template a
 ## Overlay ad skip compatibility — prompt 044
 
 A prominent playing video.video-overlay inside a div.video-overlay can supply main-player playback only when its layer belongs to the dominant video's player and covers at least 80% of that video's visible area. Require the associated outer video-overlay-skip control to be skippable, visible and unobstructed. Allow “Skip This Video” only within this ready ad control. Use native click, preserve MGP mouseup behavior and generic matching, and retain countdown, paused-video, unrelated-preview and duplicate exclusions.
+
+
+## CumRocket workspace and direct activation
+
+The CumRocket workspace redesign supersedes the historical profile activation workflow above. Saved-profile activation must be available without Edit and persist immediately through the dedicated profile toggle mutation. Name/keyword drafts must survive activation changes, failures must restore the switch and report the error, and page highlights must refresh. New-profile activation remains part of initial creation. Profile name editing remains explicit.
+
+Profiles and keyword editing come before secondary tools, with section navigation and a responsive, distinct CumRocket design. See [workspace redesign](workspace-redesign.md) for implementation and validation.

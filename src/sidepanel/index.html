@@ -1,43 +1,48 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CumRocket — Profiles</title><link rel="stylesheet" href="../ui/styles.css"></head><body><main>
-<header><h1>CumRocket</h1><p class="subtitle">Find your spark. Follow the words.</p></header>
-<section><div class="row"><label class="inline"><input type="checkbox" id="global-enabled"> Highlight pages</label><button id="settings">Settings</button></div><p id="global-note" class="hint"></p></section>
-<section><label class="inline"><input type="checkbox" id="sidebar-mode"> Use sidebar</label><p class="hint">Choose where CumRocket opens. Profiles and keywords work in either view.</p><button id="show-sidebar" hidden>Show sidebar</button></section>
-<section><label class="inline"><input type="checkbox" id="tracking-enabled"> Track keyword occurrences</label><p class="hint">Live counts for saved keywords on the current page. Pauses with Highlight pages.</p></section>
-<section id="url-visits"><label class="inline"><input type="checkbox" id="visits-enabled" disabled> Track URL visits</label>
-<label for="visits-mode">URL tracking mode</label><select id="visits-mode" disabled><option value="session">Per session</option><option value="allTime">All time</option></select>
-<p class="hint">Counts new HTTP/HTTPS visits, reloads and URL changes while enabled. Session history resets when the browser restarts. Each mode keeps its own history, locally. Also tracks browser popups/new tabs and visible website overlays. Expand URL visit history to see popup counts.</p>
-<p id="visits-current" class="hint" role="status"></p>
-<details id="visits-details"><summary>URL visit history</summary><label for="visits-search">Search visited URLs</label><input type="search" id="visits-search"><div id="visits-history"></div><h3>Popup history</h3><div id="popup-history" aria-live="polite"></div><button id="visits-more" hidden>Show more</button></details>
-<button id="visits-clear" class="danger" disabled>Clear URL history</button><p class="hint">Clears both session and all-time URL visits and popup history.</p><p id="visits-status" role="status"></p></section>
-<section><label class="inline"><input type="checkbox" id="auto-scroll" disabled> Auto Scroll</label>
-<div id="scroll-controls" hidden><label class="inline"><input type="checkbox" id="scroll-positive-pause"> Pause on positive keyword</label><label class="inline"><input type="checkbox" id="scroll-positive-slow"> Slow down on positive keyword</label><p class="hint">Slowdown uses ¼ speed at the eyeball level instead of pausing, even if both options are checked. Adjust the eyeball level in Settings.</p><label for="scroll-speed">Scroll speed <output id="scroll-speed-value" for="scroll-speed">120 px/s</output></label><input id="scroll-speed" type="range" min="30" max="600" step="10" value="120"><button id="scroll-pause" type="button">Pause</button></div>
-<p id="scroll-shortcut" class="hint">Resume shortcut: configure at chrome://extensions/shortcuts.</p>
-<p id="scroll-status" class="hint" role="status">Loading tab…</p><p class="hint">Scrolls and follows supported next-page controls. Settings apply only to this tab.</p></section>
-<p id="page-status" class="hint" role="status"></p>
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CumRocket — Workspace</title><link rel="stylesheet" href="../ui/styles.css"></head>
+<body class="workspace"><main>
+<header class="brand-header"><div class="brand-row"><div><h1>CumRocket</h1><p class="subtitle">Find what pulls you in.</p></div><button id="settings" class="header-button">Settings</button></div>
+<div class="scan-strip"><label class="inline"><input type="checkbox" id="global-enabled"> Highlight pages</label><span class="local-note">LOCAL BY DEFAULT</span></div>
+<p id="global-note" class="hint"></p></header>
+<nav class="workspace-nav" aria-label="Workspace sections"><a href="#keyword-workspace">Keywords</a><a href="#browse-tools">Browse</a><a href="#discovery">Discover</a><a href="#url-visits">History</a></nav>
 <p id="status" role="status" aria-live="polite"></p>
-<div class="row"><h2>Keyword profiles</h2><button id="new-profile">New profile</button></div>
+<div id="keyword-workspace" class="feature-block" tabindex="-1"><div class="section-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h2>Keyword profiles</h2></div><button id="new-profile" class="primary">New profile</button></div>
 <label for="profile-select">Profile</label><select id="profile-select" disabled><option>Loading profiles…</option></select>
 <p id="profiles-empty" class="empty" hidden>No profiles yet. Choose New profile to start.</p>
 <div id="profiles" class="actions"><button id="edit-profile" hidden>Edit</button><button id="delete-profile" class="danger" hidden>Delete</button></div>
-<section id="editor" hidden><h2 id="editor-title">New profile</h2><form id="profile-form">
-<label for="name">Profile name</label><input id="name" required maxlength="80" placeholder="e.g. AI Infrastructure">
-<label class="inline"><input id="profile-enabled" type="checkbox" checked> Profile enabled</label>
+<section id="editor" hidden><div class="workspace-title"><h2 id="editor-title">New profile</h2><label class="inline profile-switch"><input id="profile-enabled" type="checkbox" checked> Profile enabled</label></div><p id="profile-toggle-status" class="hint" role="status"></p><form id="profile-form"><div id="profile-details">
+<label for="name">Profile name</label><input id="name" required maxlength="80" placeholder="e.g. My discoveries">
 <div id="save-actions" class="actions"><button type="submit" class="primary">Save profile</button><button type="button" id="cancel-edit">Cancel</button></div>
-<p id="edit-help" class="hint">Select a keyword to inspect it. Choose Edit to make changes.</p>
+</div><p id="edit-help" class="hint">Select a keyword to inspect it. Choose Edit to make changes.</p>
 <div id="keyword-search-field"><label for="keyword-search">Search keywords</label><input id="keyword-search" type="search" placeholder="Filter this profile’s keywords"></div>
 <div class="word-tabs" role="tablist" aria-label="Word lists">
 <button type="button" id="positive-tab" role="tab" aria-selected="true" aria-controls="positive-panel" tabindex="0">Positive Words</button>
 <button type="button" id="negative-tab" role="tab" aria-selected="false" aria-controls="negative-panel" tabindex="-1">Negative Words</button>
 </div>
-<div id="positive-panel" class="keyword-list" role="tabpanel" aria-labelledby="positive-tab" tabindex="0"><small>Yellow by default. Edit a keyword to choose its highlight color.</small><div id="positive"></div></div>
-<div id="negative-panel" class="keyword-list" role="tabpanel" aria-labelledby="negative-tab" tabindex="0" hidden><small>Red by default. Negative words take precedence where terms overlap, regardless of color.</small><div id="negative"></div></div>
+<div id="positive-panel" class="keyword-list" role="tabpanel" aria-labelledby="positive-tab" tabindex="0"><small>Words to find. Choose a color for each keyword.</small><div id="positive"></div></div>
+<div id="negative-panel" class="keyword-list" role="tabpanel" aria-labelledby="negative-tab" tabindex="0" hidden><small>Words to flag. These take priority where highlights overlap.</small><div id="negative"></div></div>
 </form></section>
-<section><h2>Discover related keywords</h2><p id="ai-model" class="hint"></p><p class="hint">Send seed keywords to your selected AI provider, review suggestions, then choose which to add. API usage may incur charges.</p>
+</div>
+<section id="browse-tools" class="feature-block" tabindex="-1"><p class="eyebrow">SET YOUR PACE</p><h2>Browsing controls</h2><div class="tools-grid"><section class="tool-card"><label class="inline"><input type="checkbox" id="auto-scroll" disabled> Auto Scroll</label>
+<div id="scroll-controls" hidden><label class="inline"><input type="checkbox" id="scroll-positive-pause"> Pause on positive keyword</label><label class="inline"><input type="checkbox" id="scroll-positive-slow"> Slow down on positive keyword</label><p class="hint">Slowdown uses ¼ speed at the eyeball level instead of pausing, even if both options are checked. Adjust the eyeball level in Settings.</p><label for="scroll-speed">Scroll speed <output id="scroll-speed-value" for="scroll-speed">120 px/s</output></label><input id="scroll-speed" type="range" min="30" max="600" step="10" value="120"><button id="scroll-pause" type="button">Pause</button></div>
+<p id="scroll-shortcut" class="hint">Resume shortcut: configure at chrome://extensions/shortcuts.</p>
+<p id="scroll-status" class="hint" role="status">Loading tab…</p><p class="hint">Scrolls and follows supported next-page controls. Settings apply only to this tab.</p></section>
+<section><label class="inline"><input type="checkbox" id="tracking-enabled"> Track keyword occurrences</label><p class="hint">Live counts for saved keywords on the current page. Pauses with Highlight pages.</p></section>
+<section><label class="inline"><input type="checkbox" id="sidebar-mode"> Use sidebar</label><p class="hint">Keep this workspace beside the page you’re browsing.</p><button id="show-sidebar" hidden>Show sidebar</button></section>
+</div><p id="page-status" class="hint" role="status"></p></section>
+<section id="discovery" class="feature-block" tabindex="-1"><p class="eyebrow">EXPAND YOUR SEARCH</p><h2>Discover related keywords</h2><p id="ai-model" class="hint"></p><p class="hint">Send seed keywords to your selected AI provider, review suggestions, then choose which to add. API usage may incur charges.</p>
 <label for="ai-profile">Add suggestions to</label><select id="ai-profile"></select>
 <label for="seeds">Seed keywords</label><textarea id="seeds" placeholder="artificial intelligence"></textarea>
 <div class="actions"><button id="suggest" class="primary">Get suggestions</button></div>
 <button id="configure-key" hidden>Configure API key</button>
 <div id="review" hidden><p class="hint">Nothing is added until you select suggestions and click Add selected.</p><div id="suggestions"></div><label for="target">Keyword list</label><select id="target"><option value="positiveKeywords">Positive keywords</option><option value="negativeKeywords">Negative keywords</option></select><div class="actions"><button id="add-suggestions">Add selected</button><button id="dismiss-suggestions">Dismiss all</button></div></div></section>
+<section id="url-visits" class="feature-block" tabindex="-1"><p class="eyebrow">YOUR TRAIL</p><h2>Browsing history</h2><label class="inline"><input type="checkbox" id="visits-enabled" disabled> Track URL visits</label>
+<label for="visits-mode">URL tracking mode</label><select id="visits-mode" disabled><option value="session">Per session</option><option value="allTime">All time</option></select>
+<p class="hint">Keep a local record of visits and popups. Session history resets when the browser restarts; all-time history stays until cleared.</p>
+<p id="visits-current" class="hint" role="status"></p>
+<details id="visits-details"><summary>URL visit history</summary><label for="visits-search">Search visited URLs</label><input type="search" id="visits-search"><div id="visits-history"></div><h3>Popup history</h3><div id="popup-history" aria-live="polite"></div><button id="visits-more" hidden>Show more</button></details>
+<button id="visits-clear" class="danger" disabled>Clear URL history</button><p class="hint">Clears both session and all-time URL visits and popup history.</p><p id="visits-status" role="status"></p></section>
 <section id="profile-transfers"><h2>Profile backups</h2><div class="actions"><button id="export-all">Export Profiles</button><button id="export-single" disabled>Export Profile</button><button id="import-all">Import Profiles</button><button id="import-single">Import Profile</button></div>
 <p class="hint">Export saved profiles as JSON. Import replaces matching IDs; other profiles stay.</p><input id="import-file" type="file" accept=".json,application/json" hidden></section>
+<footer class="workspace-footer">CUMROCKET <span>Made for your next discovery.</span></footer>
 </main><script type="module" src="index.js"></script></body></html>

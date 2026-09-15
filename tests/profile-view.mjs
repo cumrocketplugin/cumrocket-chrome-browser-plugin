@@ -20,7 +20,49 @@ export async function checkProfileView(page, id) {
     assert.deepEqual(await selector.locator('option').allTextContents(), await page.evaluate(async () => (await chrome.runtime.sendMessage({ type: 'state.get' })).data.profiles.map(p => p.name)));
     assert.equal(await page.getByLabel('Profile name').inputValue(), 'Searchable profile');
     assert.equal(await page.getByLabel('Profile name').isEditable(), false);
-    assert.equal(await page.getByLabel('Profile enabled').isEnabled(), false);
+    assert.equal(await page.getByLabel('Profile enabled').isEnabled(), true);
+    const enabledSwitch = page.getByLabel('Profile enabled', { exact: true });
+    const stored = () => page.evaluate(async id => (await chrome.runtime.sendMessage({ type: 'state.get' })).data.profiles.find(p => p.id === id), fixtures[0].id);
+    await enabledSwitch.uncheck();
+    await page.getByText('Profile disabled.', { exact: true }).waitFor();
+    assert.equal((await stored()).enabled, false);
+    assert.deepEqual((await stored()).positiveKeywords, ['Dog', 'hot dog', { text: 'cat', active: false }]);
+    assert.equal(await page.locator('#profile-details').isVisible(), false);
+    await page.reload();
+    await selector.selectOption(fixtures[0].id);
+    assert.equal(await enabledSwitch.isChecked(), false);
+    // Failed saves restore the switch and do not lose the saved state.
+    const worker = page.context().serviceWorkers()[0];
+    await worker.evaluate(() => { globalThis.toggleOriginalSet = chrome.storage.local.set; chrome.storage.local.set = async () => { throw Error('profile toggle failed'); }; });
+    try {
+      await enabledSwitch.click();
+      await page.locator('#profile-toggle-status').filter({ hasText: 'profile toggle failed' }).waitFor();
+      assert.equal(await enabledSwitch.isChecked(), false);
+      assert.equal((await stored()).enabled, false);
+    } finally {
+      await worker.evaluate(() => { chrome.storage.local.set = globalThis.toggleOriginalSet; delete globalThis.toggleOriginalSet; });
+    }
+    await enabledSwitch.check();
+    await page.getByText('Profile enabled.', { exact: true }).waitFor();
+    // Toggling must preserve an unfinished keyword editor and its input.
+    const draftRow = page.locator('#positive .keyword-row').first();
+    await draftRow.getByRole('button', { name: 'Edit', exact: true }).click();
+    await draftRow.getByRole('textbox', { name: 'Positive keyword', exact: true }).fill('Unfinished keyword');
+    await enabledSwitch.uncheck();
+    await page.getByText('Profile disabled.', { exact: true }).waitFor();
+    assert.equal(await draftRow.getByRole('textbox', { name: 'Positive keyword', exact: true }).inputValue(), 'Unfinished keyword');
+    await enabledSwitch.check();
+    await page.getByText('Profile enabled.', { exact: true }).waitFor();
+    await draftRow.getByRole('button', { name: 'Cancel', exact: true }).click();
+    assert.equal((await stored()).name, 'Searchable profile');
+    // Main work comes before browsing preferences; navigation reaches every section.
+    assert.ok(await page.locator('#keyword-workspace').evaluate(node => !!(node.compareDocumentPosition(document.querySelector('#browse-tools')) & Node.DOCUMENT_POSITION_FOLLOWING)));
+    for (const [label, target] of [['Browse', '#browse-tools'], ['Discover', '#discovery'], ['History', '#url-visits'], ['Keywords', '#keyword-workspace']]) {
+      await page.getByRole('navigation', { name: 'Workspace sections' }).getByRole('link', { name: label, exact: true }).click();
+      assert.equal(await page.locator(target).isVisible(), true);
+      assert.ok(Math.abs(await page.locator(target).evaluate(node => node.getBoundingClientRect().top)) < 100);
+    }
+
     assert.equal(await page.locator('#positive').getByRole('button', { name: 'Add Keyword' }).isVisible(), true);
     const search = page.getByRole('searchbox', { name: 'Search keywords' });
     const rows = page.locator('#positive .keyword-row:visible');
@@ -53,6 +95,12 @@ export async function checkProfileView(page, id) {
     await rows.first().getByRole('button', { name: 'Save keyword' }).click();
     await page.waitForFunction(() => !document.querySelector('#profile-form').inert);
     await page.getByLabel('Profile name').fill('Changed draft');
+    await enabledSwitch.uncheck();
+    await page.getByText('Profile disabled.', { exact: true }).waitFor();
+    assert.equal(await page.getByLabel('Profile name').inputValue(), 'Changed draft');
+    assert.equal((await stored()).name, 'Searchable profile');
+    await enabledSwitch.check();
+    await page.getByText('Profile enabled.', { exact: true }).waitFor();
     page.once('dialog', dialog => dialog.dismiss());
     await page.locator('#cancel-edit').click();
     assert.equal(await page.getByLabel('Profile name').inputValue(), 'Changed draft');

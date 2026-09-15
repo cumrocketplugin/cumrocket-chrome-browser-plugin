@@ -117,15 +117,13 @@ try {
   await waitFor(site, () => !CSS.highlights.has('cumrocket-matches') && !CSS.highlights.has('cumrocket-negative'));
   await panel.getByLabel('Highlight pages').check();
   await waitFor(site, () => CSS.highlights.get('cumrocket-matches')?.size === 5);
-  await panel.locator('#edit-profile').click();
+  // Profile activation works directly from the workspace, with no Edit/Save step.
+  assert.equal(await panel.locator('#profile-details').isVisible(), false);
   await panel.getByLabel('Profile enabled', { exact: true }).uncheck();
-  await panel.getByRole('button', { name: 'Save profile' }).click();
-  await panel.getByText('Profile saved.', { exact: true }).waitFor();
+  await panel.getByText('Profile disabled.', { exact: true }).waitFor();
   await waitFor(site, () => !CSS.highlights.has('cumrocket-matches') && !CSS.highlights.has('cumrocket-negative'));
-  await panel.locator('#edit-profile').click();
   await panel.getByLabel('Profile enabled', { exact: true }).check();
-  await panel.getByRole('button', { name: 'Save profile' }).click();
-  await panel.getByText('Profile saved.', { exact: true }).waitFor();
+  await panel.getByText('Profile enabled.', { exact: true }).waitFor();
   await waitFor(site, () => CSS.highlights.get('cumrocket-matches')?.size === 5);
   await panel.locator('#edit-profile').click();
   await clearKeywords(panel, 'positive');

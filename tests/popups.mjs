@@ -32,7 +32,9 @@ export async function checkPopups(context, panel, base) {
   await panel.locator('#visits-details').evaluate(node => node.open = true);
   try { await panel.locator('#popup-history').getByText(/Website overlay:.*popup-item.*Seen before.*Seen 2 times/).waitFor(); }
   catch (error) { throw new Error(`Popup history did not render: ${await panel.locator('#popup-history').innerText()}; snapshot: ${JSON.stringify(await panel.evaluate(() => chrome.runtime.sendMessage({ type: 'visits.get' })))}`, { cause: error }); }
-  assert.equal(await panel.locator('#popup-history').getByText(/Browser popup.*opened-popup.*Seen 2 times/).count(), 1);
+  const browserHistory = panel.locator('#popup-history').getByText(/Browser popup.*opened-popup.*Seen 2 times/);
+  await browserHistory.waitFor(); // Storage acknowledgement precedes the asynchronous UI refresh.
+  assert.equal(await browserHistory.count(), 1);
   await panel.locator('#visits-enabled').uncheck();
   await panel.getByText('URL tracking saved.', { exact: true }).waitFor();
   await site.close();

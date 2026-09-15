@@ -19,15 +19,17 @@ let editMode = false, dirty = false, saving = false, loadedProfile = null, refre
 function setEditMode(value) {
   editMode = value;
   $('#name').readOnly = !value;
-  $('#profile-enabled').disabled = !value;
+  $('#profile-enabled').disabled = saving;
+  $('#profile-details').hidden = !value;
+  $('#edit-help').hidden = !value;
   $('#save-actions').hidden = !value;
   $('#edit-profile').hidden = !editingId || value;
   positive.setEditable(true);
   negative.setEditable(true);
   clearCounts();
   $('#edit-help').textContent = value
-    ? editingId ? 'Save profile applies only the name and enabled state. Keywords save independently.' : 'Name your profile and enter keywords. Add Keyword keeps the previous entry; Save profile saves all entered keywords. The profile remains unsaved until then.'
-    : 'Edit changes profile details. Each keyword saves independently; activity changes apply immediately.';
+    ? editingId ? 'Save profile updates the name. Profile and keyword switches save immediately.' : 'Name your profile and enter keywords. Add Keyword keeps the previous entry; Save profile saves all entered keywords. The profile remains unsaved until then.'
+    : 'Profile and keyword switches save immediately. Edit changes the profile name.';
 }
 function view(profile, editable = false) {
   if (editingId !== (profile?.id ?? null) || !profile) tabs.select('positive-tab');
@@ -42,6 +44,7 @@ function view(profile, editable = false) {
   positive.load(editableKeywords(profile, 'positive'));
   negative.load(editableKeywords(profile, 'negative'));
   $('#profile-enabled').checked = profile?.enabled ?? true;
+  $('#profile-toggle-status').textContent = profile ? (profile.enabled ? 'Enabled for matching' : 'Disabled · keywords are kept') : 'New profile · not saved yet';
   $('#editor').hidden = !profile && !editable;
   $('#delete-profile').hidden = !profile;
   $('#export-single').disabled = !profile;
@@ -59,6 +62,7 @@ function persistKeyword(kind, previous, value) {
     if (saving) throw new Error('A save is in progress. Try again when it finishes.');
     saving = true;
     $('#profile-form').inert = true;
+    $('#profile-enabled').disabled = true;
     try {
       await request('profile.keyword', { id: editingId, kind, previous, value });
       await refresh();
@@ -66,6 +70,7 @@ function persistKeyword(kind, previous, value) {
     } finally {
       saving = false;
       $('#profile-form').inert = false;
+      $('#profile-enabled').disabled = false;
       $('#profile-select').disabled = !state.profiles.length;
     }
   })();
@@ -83,7 +88,36 @@ $('#keyword-search').addEventListener('input', event => {
   positive.filter(event.target.value); negative.filter(event.target.value);
 });
 $('#profile-form').addEventListener('input', event => {
-  if (editMode && event.target.matches('#name, #profile-enabled')) markDirty();
+  if (editMode && event.target.matches('#name')) markDirty();
+});
+// Saved-profile activation is independent of name/keyword drafts.
+$('#profile-enabled').addEventListener('change', async () => {
+  const toggle = $('#profile-enabled');
+  if (!editingId) { markDirty(); return; }
+  const profile = state.profiles.find(p => p.id === editingId);
+  if (saving || !profile) { toggle.checked = profile?.enabled ?? false; return; }
+  const enabled = toggle.checked;
+  saving = true;
+  toggle.disabled = true;
+  $('#profile-form').inert = true;
+  $('#profile-select').disabled = true;
+  $('#profile-toggle-status').textContent = 'Saving…';
+  try {
+    await request('profile.toggle', { id: editingId, enabled });
+    await refresh();
+    loadedProfile = JSON.stringify(state.profiles.find(p => p.id === editingId));
+    $('#profile-toggle-status').textContent = enabled ? 'Enabled for matching' : 'Disabled · keywords are kept';
+    report(enabled ? 'Profile enabled.' : 'Profile disabled.');
+  } catch (error) {
+    toggle.checked = profile.enabled;
+    $('#profile-toggle-status').textContent = `Could not save: ${error.message}`;
+    report(error);
+  } finally {
+    saving = false;
+    toggle.disabled = false;
+    $('#profile-form').inert = false;
+    $('#profile-select').disabled = !state.profiles.length;
+  }
 });
 action($('#edit-profile'), () => { if (!saving) { setEditMode(true); $('#name').focus(); } });
 action($('#delete-profile'), async () => {
@@ -119,6 +153,11 @@ async function refresh() {
   if (!editMode && !saving && !positive.hasPending() && !negative.hasPending()) {
     const profile = state.profiles.find(p => p.id === editingId) ?? state.profiles[0];
     if (JSON.stringify(profile ?? null) !== loadedProfile) view(profile);
+  }
+  const currentProfile = state.profiles.find(p => p.id === editingId);
+  if (currentProfile && !saving) {
+    $('#profile-enabled').checked = currentProfile.enabled;
+    $('#profile-toggle-status').textContent = currentProfile.enabled ? 'Enabled for matching' : 'Disabled · keywords are kept';
   }
   const selected = $('#ai-profile').value;
   $('#ai-profile').replaceChildren(...state.profiles.map(p => element('option', p.name, { value: p.id })));
@@ -215,6 +254,7 @@ $('#profile-form').addEventListener('submit', async event => {
     const profile = { id: editingId, name: $('#name').value, enabled: $('#profile-enabled').checked,
       ...(!existing ? { positiveKeywords: positive.read(), negativeKeywords: negative.read(), criteria: [] } : {}) };
     $('#profile-form').inert = true;
+    $('#profile-enabled').disabled = true;
     report('Saving profile…');
     const saved = await request(existing ? 'profile.details' : 'profile.save', { profile });
     editingId = saved.id;
@@ -233,7 +273,13 @@ $('#profile-form').addEventListener('submit', async event => {
     report('Profile saved.');
     $('#edit-profile').focus();
   } catch (error) { report(error); }
-  finally { saving = false; button.disabled = false; $('#profile-form').inert = false; $('#profile-select').disabled = !state.profiles.length; }
+  finally {
+    saving = false;
+    button.disabled = false;
+    $('#profile-form').inert = false;
+    $('#profile-enabled').disabled = false;
+    $('#profile-select').disabled = !state.profiles.length;
+  }
 });
 $('#ai-profile').addEventListener('change', clearSuggestions);
 action($('#suggest'), async () => {
