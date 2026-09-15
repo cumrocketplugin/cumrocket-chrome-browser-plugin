@@ -73,3 +73,78 @@ Edit `src/icons/icon.svg` and run `npm run icons` to regenerate the packaged PNG
 - `scripts/`: build and icon generation.
 - `docs/port-notes.md`: port scope and verification record.
 - [GITHUB_FLOW.md](GITHUB_FLOW.md): repository Git workflow.
+
+## For entertainers and creators: get listed
+
+Want your name highlighted when users come across you on supported adult sites? Add yourself through this public GitHub repository by editing **[src/entertainers/listings.json](src/entertainers/listings.json)**.
+
+### Official payment requirements
+
+**Payments are not configured yet. Do not send payment until maintainers publish every required detail in the `paymentPolicy` section of [the listing file](src/entertainers/listings.json) on this repository’s default branch.** No wallet, blockchain, holding amount, fee amount, or fee asset has been supplied yet. A fork or an unmerged Pull Request is not the official payment source.
+
+Once configured, you must hold the published minimum CUMMIES amount and pay the published monthly maintenance fee using **only the wallet address, blockchain, and fee asset specified there**. Include your transaction ID/hash and the public wallet holding your CUMMIES so maintainers can verify your submission.
+
+**IMPORTANT:** Do not send payment to any wallet address or blockchain other than the ones published in the official repository. We will never ask you to send payment to a different address through a DM, comment, email, or other message. Never include private keys, seed phrases, passwords, or account credentials in a submission. Listing information, public wallet addresses, and transaction hashes are public.
+
+### Add or update your listing
+
+1. Sign in to GitHub and open this repository. Click **Fork** to create your own copy.
+2. In your fork, create a branch such as `add-your-stage-name` using the branch selector.
+3. Open **`src/entertainers/listings.json`** and click the pencil to edit it. Add an object to the `listings` array, or update your existing object. Keep other entertainers’ entries intact. Separate objects with commas; JSON does not allow comments or trailing commas.
+4. Use your public stage name, aliases actually used on sites, labeled profile URLs, and one or more of the predefined category IDs below. Do not change categories, supported sites, or payment policy as part of a listing submission.
+5. Once official payments are configured, meet the holding and monthly fee requirements and insert your transaction hash and holding wallet. While payments are unconfigured, you may submit a **pending** listing with those fields empty for review; it cannot be activated yet.
+6. For a new submission, use `"status": "pending"` and `"activeUntil": null`. Maintainers set approval and expiry after verification. For an update or renewal, preserve the existing ID, status, and expiry for the maintainer to review.
+7. Click **Commit changes** to save to your branch. In your fork, choose **Contribute → Open pull request** (or **Compare & pull request**). Select this original repository’s default branch as the base and your fork’s listing branch as the compare branch.
+8. Give the Pull Request a title such as `Add entertainer: Your Stage Name`. Describe your addition/update, link your public profiles, list your categories, and include the payment transaction hash and holding wallet or state that payment configuration is pending. Explain whether this is a new listing or a monthly renewal.
+9. Review the **Files changed** tab, then submit the Pull Request. Respond to reviewer requests by editing and committing to the same branch; the Pull Request updates automatically.
+
+Example object to put inside `listings` (replace the example details; do not submit a fictional creator):
+
+```json
+{
+  "id": "your-stage-name",
+  "name": "Your Stage Name",
+  "aliases": ["YourOtherPublicName"],
+  "profiles": [
+    { "site": "Your profile site", "url": "https://example.com/your-profile" }
+  ],
+  "categories": ["performers", "creators"],
+  "payment": {
+    "transactionHash": "",
+    "holdingWallet": ""
+  },
+  "status": "pending",
+  "activeUntil": null
+}
+```
+
+| Category ID | Category |
+| --- | --- |
+| `performers` | Performers |
+| `creators` | Independent creators |
+| `cam-models` | Cam models |
+| `cosplay` | Cosplay creators |
+| `couples` | Couples |
+| `studios` | Studios |
+
+Use a unique lowercase, hyphenated ID that stays the same for renewals. Names and aliases are limited to 120 characters, with up to 20 aliases. Profile links must use HTTPS. The validator checks the file’s structure; maintainers verify ownership, eligibility, holdings, and payment separately.
+
+### Need help from GPT?
+
+Paste the public example and your proposed listing into GPT and ask:
+
+> Help me prepare a CumRocket entertainer listing Pull Request. Check my JSON and predefined categories, explain how to fork the repository, create a branch, edit src/entertainers/listings.json, and open a Pull Request against the original repository. Keep approval fields for maintainers. Do not invent payment details; use only the configured policy on the official repository’s default branch.
+
+Check GPT’s suggested changes before committing. If you work locally, run `npm ci`, `npm run validate:entertainers`, and `npm run check` before submitting. See [GITHUB_FLOW.md](GITHUB_FLOW.md) for the developer Git workflow.
+
+### Approval, monthly renewals, and availability
+
+Maintainers review the Pull Request, verify profile ownership and the published holding/payment requirements, then set `status` to `approved` and `activeUntil` to the verified paid-through UTC instant (for example, `2026-10-15T00:00:00.000Z`). Approval requires configured payment details, a transaction hash, a holding wallet, and an expiry. New pending or suspended entries never highlight. Renew through another Pull Request with your new monthly transaction hash; maintainers extend the expiry after verification. Maintainers must suspend listings when holding requirements are no longer met. The plugin does not connect to wallets or automatically verify blockchain balances/payments.
+
+Merged listings ship with the next plugin build/release. Users must update their installed extension (or rebuild and reload an unpacked installation); the plugin does not download live GitHub changes. Approved, unexpired names load automatically when the plugin starts. Expired listings stop highlighting, including on pages already open. A stale installed version may retain earlier approval until its bundled expiry, so holding suspensions require a plugin update.
+
+### User controls and supported pages
+
+Open **Settings → Entertainers and creators** to disable the entire directory or individual predefined categories. All categories and the directory switch default to on, including for existing installations. Preferences survive restarts. Selecting no categories hides all directory names; a listing in several categories remains visible when any of them is selected. The plugin’s main highlighting switch also disables these highlights.
+
+The directory currently allows rendered-text matching on `pornhub.com`, `xvideos.com`, `xhamster.com`, `redtube.com`, and `youporn.com`, including their subdomains. Maintainers manage this allowlist in `supportedSites`; live site layouts are not guaranteed. Matching uses public names/aliases as case-insensitive whole words or phrases; profile URLs provide review context, not account identity verification. Matching stays local and follows the scanner limitations above. Directory names use the normal positive highlight style and can participate in positive-match scrolling behavior. They do not create personal keyword profiles or add to personal keyword counts/backups. The initial directory is empty until real submissions are approved.

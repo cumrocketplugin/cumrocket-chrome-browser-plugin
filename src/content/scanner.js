@@ -1,6 +1,7 @@
 import { countEntries, countUnit, contextCounts, mergeCountHistory, historyTotals } from '../matching/counts.js';
 import { findMatches, resolveHighlights } from '../matching/matcher.js';
 import { Highlighter } from '../highlighting/highlighter.js';
+import { entertainerProfiles, nextEntertainerExpiry } from '../entertainers/directory.js';
 const SKIP = 'script,style,noscript,textarea,input,select,option,pre,code,kbd,samp,svg,canvas,[hidden],[inert],[aria-hidden="true"],[contenteditable]:not([contenteditable="false"])';
 export class Scanner {
   constructor(doc = document, persistCounts = null) {
@@ -28,10 +29,13 @@ export class Scanner {
   update(state) {
     this.stop();
     this.state = state;
+    this.matchProfiles = [...state.profiles, ...entertainerProfiles(state.entertainers, this.win.location.href)];
+    const expiry = nextEntertainerExpiry();
+    if (state.enabled && Number.isFinite(expiry)) this.expiryTimer = this.win.setTimeout(() => this.update(this.state), Math.min(2147483647, Math.max(1, expiry - Date.now())));
     this.entries = state.tracking ? countEntries(state.profiles) : [];
     this.url = this.win.location.href;
     if (state.tracking && state.enabled) this.recordCounts([]);
-    if (!state.enabled || !state.profiles.some(p => p.enabled && (p.positiveKeywords.length || p.negativeKeywords.length || p.rules?.criteria?.length))) return;
+    if (!state.enabled || !this.matchProfiles.some(p => p.enabled && (p.positiveKeywords.length || p.negativeKeywords.length || p.rules?.criteria?.length))) return;
     this.observer.observe(this.doc.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-hidden', 'contenteditable', 'inert'] });
     this.win.addEventListener('resize', this.schedule);
     if (state.tracking) {
@@ -46,6 +50,7 @@ export class Scanner {
     this.revision++;
     this.observer.disconnect();
     this.win.clearTimeout(this.timer);
+    this.win.clearTimeout(this.expiryTimer);
     this.timer = null;
     this.win.removeEventListener('resize', this.schedule);
     this.doc.removeEventListener('toggle', this.schedule, true);
@@ -89,7 +94,7 @@ export class Scanner {
       if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
       let cached = this.cache.get(node);
       if (!cached || cached.text !== node.textContent) {
-        cached = { text: node.textContent, matches: resolveHighlights(findMatches(node.textContent, this.state.profiles)),
+        cached = { text: node.textContent, matches: resolveHighlights(findMatches(node.textContent, this.matchProfiles)),
           counts: this.state.tracking ? countUnit(node.textContent, this.entries) : null };
         this.cache.set(node, cached);
       }

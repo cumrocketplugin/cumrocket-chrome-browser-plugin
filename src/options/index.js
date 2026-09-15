@@ -2,6 +2,7 @@ import { SCOUT_MAX_BYTES } from '../profiles/scout.js';
 import { HIGHLIGHT_COLORS, validateColor } from '../highlighting/colors.js';
 import { element, request, report, action } from '../ui/client.js';
 import { models, providers } from '../services/models.js';
+import { CATEGORIES } from '../entertainers/directory.js';
 const $ = selector => document.querySelector(selector);
 let state;
 let draftProvider;
@@ -68,6 +69,7 @@ function renderProvider() {
 }
 async function refresh() {
   state = await request('state.get');
+  renderEntertainers(state.entertainers);
   $('#auto-skip-ads').checked = state.preferences.autoSkipAds === true;
   $('#auto-skip-ads').disabled = false;
   // AI/settings refreshes must not replace pending checkbox edits with an older snapshot.
@@ -155,5 +157,24 @@ $('#auto-skip-ads').addEventListener('change', async event => {
   try { await request('ads.settings', { enabled }); report('Automatic ad skipping saved.'); }
   catch (error) { input.checked = !enabled; report(error); }
   finally { input.disabled = false; }
+});
+let savedEntertainers;
+function renderEntertainers(settings) {
+  savedEntertainers = settings;
+  $('#entertainers-enabled').checked = settings.enabled;
+  $('#entertainer-categories').replaceChildren(...CATEGORIES.map(category => {
+    const label = element('label', undefined, { className: 'inline' });
+    const input = element('input', undefined, { type: 'checkbox', checked: settings.categories.includes(category.id), value: category.id });
+    label.append(input, document.createTextNode(category.label));
+    return label;
+  }));
+  $('#entertainer-controls').disabled = false;
+}
+$('#entertainer-controls').addEventListener('change', async () => {
+  const settings = { enabled: $('#entertainers-enabled').checked, categories: [...document.querySelectorAll('#entertainer-categories input:checked')].map(input => input.value) };
+  $('#entertainer-controls').disabled = true;
+  try { await request('entertainers.settings', { settings }); savedEntertainers = settings; report('Entertainer settings saved.'); }
+  catch (error) { renderEntertainers(savedEntertainers); report(error); }
+  finally { $('#entertainer-controls').disabled = false; }
 });
 refresh().catch(report);

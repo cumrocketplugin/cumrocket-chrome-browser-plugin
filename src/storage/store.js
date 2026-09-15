@@ -4,6 +4,7 @@ import { eyeballLevel, validateEyeballLevel, autoPauseColors, validateAutoPauseC
 import { mergeCountHistory, historyTotals, countEntries } from '../matching/counts.js';
 import { initialState, DEFAULT_PREFERENCES } from '../profiles/model.js';
 import { normalizePreferences, validateSelection } from '../services/models.js';
+import { entertainerPreferences, validateEntertainerPreferences } from '../entertainers/directory.js';
 const STATE = 'cumrocket.state';
 function validateKey(key) {
   if (typeof key !== 'string' || key.length > 512 || /\s/.test(key)) throw new Error('Enter a valid API key without whitespace.');
@@ -22,7 +23,7 @@ export function createStore(area = chrome.storage.local) {
       const saved = (await area.get(STATE))[STATE];
       if (saved && saved.schemaVersion !== 1) throw new Error('Unsupported storage version. Update CumRocket.');
       const state = saved ?? initialState();
-      return { ...state, preferences: normalizePreferences({ ...DEFAULT_PREFERENCES, ...state.preferences, eyeballLevel: eyeballLevel(state.preferences?.eyeballLevel), autoPauseColors: autoPauseColors(state.preferences?.autoPauseColors) }) };
+      return { ...state, entertainers: entertainerPreferences(state.entertainers), preferences: normalizePreferences({ ...DEFAULT_PREFERENCES, ...state.preferences, eyeballLevel: eyeballLevel(state.preferences?.eyeballLevel), autoPauseColors: autoPauseColors(state.preferences?.autoPauseColors) }) };
     },
     update(change, credentials = {}) {
       const next = queue.then(async () => {
@@ -57,6 +58,10 @@ export function createStore(area = chrome.storage.local) {
       });
       queue = next.catch(() => {});
       return next;
+    },
+    saveEntertainers(settings) {
+      const entertainers = validateEntertainerPreferences(settings);
+      return this.update(state => ({ ...state, entertainers }));
     },
     saveAdSkip(enabled) {
       if (typeof enabled !== 'boolean') throw Error('Invalid automatic ad skip toggle.');
@@ -93,7 +98,7 @@ export function createStore(area = chrome.storage.local) {
   };
 }
 export function scanningState(state) {
-  return { autoSkipAds: state.preferences?.autoSkipAds === true, locationCheck: scoutProjection(state), enabled: state.enabled, eyeballLevel: eyeballLevel(state.preferences?.eyeballLevel), autoPauseColors: autoPauseColors(state.preferences?.autoPauseColors), tracking: state.preferences?.tracking === true, profiles: state.profiles.map(({ id, enabled, positiveKeywords, negativeKeywords, rules }) => ({ id, enabled, positiveKeywords, negativeKeywords, rules })) };
+  return { entertainers: entertainerPreferences(state.entertainers), autoSkipAds: state.preferences?.autoSkipAds === true, locationCheck: scoutProjection(state), enabled: state.enabled, eyeballLevel: eyeballLevel(state.preferences?.eyeballLevel), autoPauseColors: autoPauseColors(state.preferences?.autoPauseColors), tracking: state.preferences?.tracking === true, profiles: state.profiles.map(({ id, enabled, positiveKeywords, negativeKeywords, rules }) => ({ id, enabled, positiveKeywords, negativeKeywords, rules })) };
 }
 
 // Runtime records belong to a browser session, never storage.local or profile backups.

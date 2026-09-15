@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "categories": [
+    {
+      "id": "performers",
+      "label": "Performers"
+    },
+    {
+      "id": "creators",
+      "label": "Independent creators"
+    },
+    {
+      "id": "cam-models",
+      "label": "Cam models"
+    },
+    {
+      "id": "cosplay",
+      "label": "Cosplay creators"
+    },
+    {
+      "id": "couples",
+      "label": "Couples"
+    },
+    {
+      "id": "studios",
+      "label": "Studios"
+    }
+  ],
+  "supportedSites": [
+    "pornhub.com",
+    "xvideos.com",
+    "xhamster.com",
+    "redtube.com",
+    "youporn.com"
+  ],
+  "paymentPolicy": {
+    "status": "not-configured",
+    "walletAddress": null,
+    "blockchain": null,
+    "minimumCummiesHolding": null,
+    "monthlyFee": null,
+    "feeAsset": null
+  },
+  "listings": []
+}

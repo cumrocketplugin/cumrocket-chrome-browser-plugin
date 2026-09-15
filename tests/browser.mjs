@@ -1,3 +1,4 @@
+import { checkEntertainers } from './entertainers.mjs';
 import { checkAdSkip, checkOverlayAdSkip } from './ad-skip.mjs';
 import { checkScout } from './scout.mjs';
 import { checkPopups } from './popups.mjs';
@@ -48,6 +49,7 @@ try {
   context = await launch();
   const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
   const id = new URL(worker.url()).host;
+  await checkEntertainers(context, id);
   const panel = await context.newPage();
   panel.on('pageerror', e => errors.push(e.message));
   await panel.goto(`chrome-extension://${id}/popup/index.html`);
