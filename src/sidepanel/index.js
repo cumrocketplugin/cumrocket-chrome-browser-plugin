@@ -26,7 +26,7 @@ function setEditMode(value) {
   negative.setEditable(true);
   clearCounts();
   $('#edit-help').textContent = value
-    ? editingId ? 'Save profile applies only the name and enabled state. Keywords save independently.' : 'Name your new profile and add keywords, then choose Save profile to create it.'
+    ? editingId ? 'Save profile applies only the name and enabled state. Keywords save independently.' : 'Name your profile and enter keywords. Add Keyword keeps the previous entry; Save profile saves all entered keywords. The profile remains unsaved until then.'
     : 'Edit changes profile details. Each keyword saves independently; activity changes apply immediately.';
 }
 function view(profile, editable = false) {
@@ -211,6 +211,7 @@ $('#profile-form').addEventListener('submit', async event => {
   $('#profile-select').disabled = true;
   try {
     const existing = !!editingId;
+    if (!existing) { await positive.commitPending(); await negative.commitPending(); }
     const profile = { id: editingId, name: $('#name').value, enabled: $('#profile-enabled').checked,
       ...(!existing ? { positiveKeywords: positive.read(), negativeKeywords: negative.read(), criteria: [] } : {}) };
     $('#profile-form').inert = true;

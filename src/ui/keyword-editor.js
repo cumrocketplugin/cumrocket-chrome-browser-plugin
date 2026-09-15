@@ -89,7 +89,9 @@ export function keywordEditor(container, title, onChange = () => {}, reveal = ()
     });
     input.addEventListener('input', onChange);
     edit.addEventListener('click', () => { record.editing = true; input.value = keywordText(record.value); criteria.load(record.value?.matchingCriteria); colors.load(record.value); render(); input.focus(); row.scrollIntoView({ block: 'nearest' }); });
-    save.addEventListener('click', async () => {
+    record.commit = async () => {
+      if (save.disabled) return false;
+      save.disabled = true;
       try {
         const criterion = criteria.read(), color = colors.read();
         const value = criterion || color !== undefined ? { text: input.value, ...(criterion ? { matchingCriteria: criterion } : {}), ...(color !== undefined ? { color } : {}) } : input.value;
@@ -103,8 +105,11 @@ export function keywordEditor(container, title, onChange = () => {}, reveal = ()
         update();
         (row.hidden ? add : edit).focus();
         report(pending ? 'Keyword saved.' : 'Keyword added to the new profile. Choose Save profile to create it.');
-      } catch (failure) { error.textContent = failure.message; input.focus(); }
-    });
+        return true;
+      } catch (failure) { reveal(); error.textContent = failure.message; input.focus(); return false; }
+      finally { save.disabled = false; }
+    };
+    save.addEventListener('click', () => record.commit());
     input.addEventListener('keydown', event => {
       if (event.key === 'Enter') { event.preventDefault(); save.click(); }
       if (event.key === 'Escape') { event.preventDefault(); cancel.click(); }
@@ -127,9 +132,23 @@ export function keywordEditor(container, title, onChange = () => {}, reveal = ()
     update();
     if (value === null) { input.focus(); row.scrollIntoView({ block: 'nearest' }); }
   }
-  add.addEventListener('click', () => { if (editable) { append(); onChange(); } });
+  add.addEventListener('click', async () => {
+    if (!editable) return;
+    add.disabled = true;
+    try {
+      for (const item of rows.filter(item => item.editing)) {
+        if (!await item.commit()) return;
+      }
+      append(); onChange();
+    } finally { add.disabled = false; }
+  });
   container.append(list, empty, add);
   return {
+    async commitPending() {
+      for (const item of rows.filter(item => item.editing)) {
+        if (!await item.commit()) throw new Error(`Correct the highlighted ${title.toLowerCase()} keyword before saving the profile.`);
+      }
+    },
     hasPending() { return rows.some(item => item.editing); },
     setCounts(values, enabled) {
       for (const row of rows) {

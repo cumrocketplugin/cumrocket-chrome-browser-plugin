@@ -17,6 +17,8 @@ npm run build
 4. Create a profile, add positive or negative keywords, save it, and visit a webpage.
 5. Open **Settings** to configure ad skipping, scrolling, location checks, or optional AI credentials.
 
+**Creating a profile:** You can type a keyword and click **Add Keyword** to keep it and enter another. **Save profile** validates and saves all entered positive and negative keywords, including the row still being edited. Until you save the profile, its keywords remain an unsaved draft; closing the popup discards that draft. Duplicate or invalid entries show an error beside the keyword.
+
 After rebuilding, reload the extension in Chrome. Keep using the same `dist/` directory to retain its identity and saved data. **Use sidebar** switches between the full popup editor and Chrome’s side panel.
 
 ## Implemented features

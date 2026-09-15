@@ -2,6 +2,46 @@ import assert from 'node:assert/strict';
 
 export async function checkNewProfileKeywords(page, id, worker) {
   for (const surface of ['popup', 'sidepanel']) {
+    // Reproduce typing successive keywords without saving either row/profile first.
+    await page.goto(`chrome-extension://${id}/${surface}/index.html`);
+    await page.locator('#profile-select:not([disabled])').waitFor();
+    await page.locator('#new-profile').click();
+    const quickName = `Unsaved keyword regression ${surface}`;
+    await page.locator('#name').fill(quickName);
+    const positive = page.locator('#positive');
+    await positive.getByRole('button', { name: 'Add Keyword', exact: true }).click();
+    await positive.getByRole('textbox', { name: 'Positive keyword', exact: true }).fill('first draft');
+    await positive.getByRole('button', { name: 'Add Keyword', exact: true }).click();
+    assert.deepEqual(await positive.locator('.keyword-row span').allTextContents(), ['first draft', 'New keyword']);
+    await positive.getByRole('textbox', { name: 'Positive keyword', exact: true }).fill('FIRST DRAFT');
+    await positive.getByRole('button', { name: 'Add Keyword', exact: true }).click();
+    assert.equal(await positive.locator('.keyword-row').count(), 2);
+    await positive.getByRole('alert').filter({ hasText: 'already exists' }).waitFor();
+    await positive.getByRole('textbox', { name: 'Positive keyword', exact: true }).fill('second draft');
+    await page.locator('#negative-tab').click();
+    const negative = page.locator('#negative');
+    await negative.getByRole('button', { name: 'Add Keyword', exact: true }).click();
+    await negative.getByRole('textbox', { name: 'Negative keyword', exact: true }).fill('exclude draft');
+    await worker.evaluate(() => {
+      globalThis.quickDraftSet = chrome.storage.local.set;
+      chrome.storage.local.set = async () => { throw Error('quick draft save failed'); };
+    });
+    try {
+      await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+      await page.locator('#status').filter({ hasText: 'quick draft save failed' }).waitFor();
+      assert.equal(await page.evaluate(async name => (await chrome.runtime.sendMessage({ type: 'state.get' })).data.profiles.some(p => p.name === name), quickName), false);
+    } finally {
+      await worker.evaluate(() => { chrome.storage.local.set = globalThis.quickDraftSet; delete globalThis.quickDraftSet; });
+    }
+    await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+    await page.getByText('Profile saved.', { exact: true }).waitFor();
+    const quickId = await page.locator('#profile-select').inputValue();
+    await page.reload();
+    await page.getByLabel('Profile', { exact: true }).selectOption(quickId);
+    assert.deepEqual(await positive.locator('.keyword-row span').allTextContents(), ['first draft', 'second draft']);
+    await page.locator('#negative-tab').click();
+    assert.deepEqual(await negative.locator('.keyword-row span').allTextContents(), ['exclude draft']);
+
     await page.goto(`chrome-extension://${id}/${surface}/index.html`);
     await page.locator('#profile-select:not([disabled])').waitFor();
     // A search on the previous profile must not carry into creation.
